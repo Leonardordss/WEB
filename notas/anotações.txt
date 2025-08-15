@@ -47,3 +47,6 @@ Após isso vamos na pasta settings do projeto e habilitar como 'rest_framework' 
 
 Criamos um arquivo chamado serializer e colocamos as classes com o nome das tabelas criadas. Ele vai pegar o JSON e converter para PYTHON e vice versa
 
+Após isso foi na pasta views.py foi feito o CRUD com apenas duas linhas de código para cada tabela criada
+
+Foi criada uma pasta chamada urls.py para registrar as rotas (endereços das URL´s)
