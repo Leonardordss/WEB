@@ -50,3 +50,14 @@ Criamos um arquivo chamado serializer e colocamos as classes com o nome das tabe
 Após isso foi na pasta views.py foi feito o CRUD com apenas duas linhas de código para cada tabela criada
 
 Foi criada uma pasta chamada urls.py para registrar as rotas (endereços das URL´s)
+
+/////////////////////////////////////
+
+Aula dia 21/08
+
+Instalamos novamente a venv e colocamos um comando para colocar todas as bibliotecas
+
+pip freeze > requirements.txt = mostra todas as bibliotecas
+
+Clona a pasta do repositorio e manda ler a requirements.txt. Comando é pip install -r .\requirements.txt  
+
