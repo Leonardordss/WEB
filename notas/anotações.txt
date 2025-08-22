@@ -73,3 +73,83 @@ Criamos um arquivo user_manager com definições para o Usuario comum e outra pa
 
 Na pagina Models nos campos que 'user' trocamos por CustomUser para usar o modelo customizado que criamos e não o modelo padrão pronto do Django (user)
 
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from .user_manager import CustomUserManager
+
+# Modelo customizado de usuário conforme requisitos
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    cpf = models.CharField(max_length=14, unique=True)  # tamanho maior para incluir pontos e hífen
+    rg = models.CharField(max_length=20)
+    data_nascimento = models.DateField()
+    
+    # Endereço completo
+    rua = models.CharField(max_length=255)
+    bairro = models.CharField(max_length=100)
+    cep = models.CharField(max_length=20)
+    cidade = models.CharField(max_length=100)
+    estado = models.CharField(max_length=50)
+    
+    telefone = models.CharField(max_length=20)
+    foto_url = models.URLField(blank=True, null=True)  # opcional
+    
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['cpf', 'rg', 'data_nascimento', 'rua', 'bairro', 'cep', 'cidade', 'estado', 'telefone']
+    
+    objects = CustomUserManager()
+    
+    def __str__(self):
+        return self.email
+
+/////////////////////////////////////////
+
+from django.contrib.auth.models import BaseUserManager
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, cpf=None, **extra_fields):
+        if not email or not password or not cpf:
+            raise ValueError("Campos obrigatórios: email, senha e CPF.")
+
+        # Normaliza o email para manter um padrão
+        email = self.normalize_email(email)
+
+        # Define que o usuário está ativo por padrão (pode mudar via verificação de email depois)
+        extra_fields.setdefault("is_active", True)
+
+        # Cria o usuário com os campos fornecidos
+        user = self.model(email=email, cpf=cpf, **extra_fields)
+
+        # Define e criptografa a senha
+        user.set_password(password)
+
+        # Salva o usuário no banco de dados
+        user.save(using=self._db)
+
+        return user
+
+    def create_superuser(self, email, password=None, cpf=None, **extra_fields):
+        # Permite acesso ao painel administrativo do Django
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
+
+        # Verificações adicionais para garantir integridade
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superusuário precisa ter is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superusuário precisa ter is_superuser=True.")
+
+        # Cria o superusuário
+        return self.create_user(email, password, cpf, **extra_fields)
+
+/////////////////////////////////////
+
+class CustomUserAdmin(UserAdmin):
+    model = CustomUser
+    list_display = ['id', 'email', 'cpf', 'telefone', 'cidade']
+    search_fields = ['email', 'cpf', 'telefone']
+    ordering = ['email']
+
+admin.site.register(CustomUser, CustomUserAdmin)
