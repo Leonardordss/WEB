@@ -61,3 +61,15 @@ pip freeze > requirements.txt = mostra todas as bibliotecas
 
 Clona a pasta do repositorio e manda ler a requirements.txt. Comando é pip install -r .\requirements.txt  
 
+/////////////////////////////////////
+
+No endereço http://127.0.0.1:8001/api/ conseguimos visualizar todas as rotas de API do Django
+
+/////////////////////////////////////
+
+Hoje Criamos um modelo novo de usuario na pagina Models. Ou seja, um modelo de usuario customizado.
+
+Criamos um arquivo user_manager com definições para o Usuario comum e outra para o Super Usuario
+
+Na pagina Models nos campos que 'user' trocamos por CustomUser para usar o modelo customizado que criamos e não o modelo padrão pronto do Django (user)
+
