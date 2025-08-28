@@ -25,7 +25,14 @@ SECRET_KEY = 'django-insecure-gtw$!p0lt*-scrbpr!#xer-(4&-s=hd40r8pz$lhih-bs+v3ui
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+#Qual servidor pode rodar o Django
+ALLOWED_HOSTS = ['*']
+
+#Quais serviços podem se comunicar com o Django. O frontend, por exemplo
+CORS_ALLOW_ALL_ORIGINS = True
+
+#Quais servidores podem fazer operações INSAFE METHODS
+CSRF_TRUSTED_ORIGINS = ['https://leonardorodrigues-manflix-senai-gfe5abh0c2cqf7de.westus3-01.azurewebsites.net']
 
 
 # Application definition
@@ -37,13 +44,18 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
     'app',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -121,7 +133,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSON_CLASSES': [
+        'rest_framewor.permissions.IsAuthenticated',
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ]
+}
