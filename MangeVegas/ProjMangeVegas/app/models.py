@@ -1,66 +1,87 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from .custom_user_manager import CustomUserManager
 
-
-# Modelo customizado de usuário conforme requisitos
 class CustomUser(AbstractBaseUser, PermissionsMixin):
-    email = models.EmailField(unique=True)
-    cpf = models.CharField(max_length=14, unique=True)  # tamanho maior para incluir pontos e hífen
-    rg = models.CharField(max_length=20)
-    data_nascimento = models.DateField()
+    name = models.CharField(max_length=255)
+    email = models.EmailField(max_length=255, unique=True)
+    cpf = models.CharField(max_length=12, unique=True)
+    rg = models.CharField(max_length=12, unique=True)
+    birth_date = models.DateField()
+    address_country = models.CharField(max_length=150)
+    address_state = models.CharField(max_length=150)
+    address_city = models.CharField(max_length=150)
+    address_district = models.CharField(max_length=150)
+    address_street = models.CharField(max_length=150)
+    address_zip_code = models.CharField(max_length=15)
+    address_number = models.CharField(max_length=50)
+    phone = models.CharField(max_length=15, unique=True, null=True, blank=True)
+    photo = models.TextField(null=True, blank=True)
+    creation_date = models.DateTimeField(auto_now_add=True)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['name', 'cpf', 'rg', 'birth_date', 
+                       'address_country', 'address_state', 'address_city',
+                       'address_district', 'address_street', 'address_zip_code',
+                       'address_number']
     
-    # Endereço completo
-    rua = models.CharField(max_length=255)
-    bairro = models.CharField(max_length=100)
-    cep = models.CharField(max_length=20)
-    cidade = models.CharField(max_length=100)
-    estado = models.CharField(max_length=50)
-    
-    telefone = models.CharField(max_length=20)
-    foto_url = models.URLField(blank=True, null=True)  # opcional
+
+    objects = CustomUserManager()
+
+    def __str__(self):
+        return self.email
+
 
 class Token(models.Model):
-    nome = models.CharField(max_length=100)
-    data_criacao = models.DateField()
-    data_insercao = models.DateField(auto_now_add=True)
-    codigo = models.CharField(max_length=10, unique=True)  # abreviação do token
-    descricao = models.TextField()
-    valor_em_mangecoin = models.DecimalField(max_digits=20, decimal_places=8)
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=10, unique=True)
+    description = models.CharField(max_length=255, blank=True, null=True)
+    token_creation_date = models.DateField()
+    insertion_date = models.DateTimeField(auto_now_add=True)
+    conversion_rate = models.DecimalField(max_digits=15, decimal_places=4)
+
+    def __str__(self):
+        return self.code
+    
+
+class Account(models.Model):
+    user_FK = models.ForeignKey(CustomUser, related_name='account_user_FK', on_delete=models.CASCADE)
+    opening_date = models.DateTimeField(auto_now_add=True)  
+    closing_date = models.DateTimeField(null=True, blank=True)
+   
+    def __str__(self):
+        return self.user_FK.email
+    
+
+class AccountToken(models.Model):
+    account_FK = models.ForeignKey(Account, related_name='accountToken_account_FK', on_delete=models.CASCADE)
+    token_FK = models.ForeignKey(Token, related_name='accountToken_token_FK', on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=15, decimal_places=2)
     
     def __str__(self):
-        return f"{self.nome} ({self.codigo})"
-
-
-class UserToken(models.Model):
-    usuario = models.ForeignKey(CustomUser, related_name='tokens', on_delete=models.CASCADE)
-    token = models.ForeignKey(Token, related_name='usuarios', on_delete=models.CASCADE)
-    quantidade = models.DecimalField(max_digits=30, decimal_places=8)
-    
-    def __str__(self):
-        return f"{self.usuario.email} - {self.token.codigo}: {self.quantidade}"
-
+        return f'{self.account_FK.user_FK.email}-{self.token_FK.code}'
 
 class Transaction(models.Model):
-    data_hora = models.DateTimeField(auto_now_add=True)
-    usuario = models.ForeignKey(CustomUser, related_name='transacoes', on_delete=models.CASCADE)
-    
-    token_origem = models.ForeignKey(Token, related_name='transacoes_origem', on_delete=models.CASCADE)
-    quantidade_origem = models.DecimalField(max_digits=30, decimal_places=8)
-    
-    token_destino = models.ForeignKey(Token, related_name='transacoes_destino', on_delete=models.CASCADE)
-    quantidade_destino = models.DecimalField(max_digits=30, decimal_places=8)
+    account_FK = models.ForeignKey(Account, related_name='transaction_account_FK', on_delete=models.CASCADE)
+    transaction_date = models.DateTimeField(auto_now_add=True) 
+    token_source_FK = models.ForeignKey(Token, related_name='transaction_token_source_FK', on_delete=models.CASCADE)
+    token_target_FK = models.ForeignKey(Token, related_name='transaction_token_target_FK', on_delete=models.CASCADE)
+    token_source_amount = models.DecimalField(max_digits=15, decimal_places=4)
+    token_target_amount = models.DecimalField(max_digits=15, decimal_places=4)
     
     def __str__(self):
-        return f"{self.usuario.email} - {self.quantidade_origem} {self.token_origem.codigo} => {self.quantidade_destino} {self.token_destino.codigo} em {self.data_hora}"
+        return f'{self.account_FK.user_FK.email}-{self.token_source_FK.code}'
 
 
-class Moves(models.Model):
-    usuario = models.ForeignKey(CustomUser, related_name='jogadas', on_delete=models.CASCADE)
-    data_hora = models.DateTimeField(auto_now_add=True)
-    ganhou = models.BooleanField()
-    quantidade = models.DecimalField(max_digits=30, decimal_places=8)
-    
+class Bet(models.Model):
+    account_FK = models.ForeignKey(Account, related_name='bet_account_FK', on_delete=models.CASCADE)
+    is_loss = models.BooleanField(default=True)
+    input_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    output_amount = models.DecimalField(max_digits=15, decimal_places=2)
+    value1 = models.IntegerField()
+    value2 = models.IntegerField()
+    value3 = models.IntegerField()
+    bet_date = models.DateTimeField(auto_now_add=True)  
+
     def __str__(self):
-        resultado = "Ganhou" if self.ganhou else "Perdeu"
-        return f"{self.usuario.email} - {resultado} {self.quantidade} em {self.data_hora}"
-
+        return self.account_FK.user_FK.email
