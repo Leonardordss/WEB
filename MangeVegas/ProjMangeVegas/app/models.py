@@ -19,6 +19,10 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     photo = models.TextField(null=True, blank=True)
     creation_date = models.DateTimeField(auto_now_add=True)
 
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
+
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name', 'cpf', 'rg', 'birth_date', 
                        'address_country', 'address_state', 'address_city',
@@ -57,6 +61,10 @@ class AccountToken(models.Model):
     account_FK = models.ForeignKey(Account, related_name='accountToken_account_FK', on_delete=models.CASCADE)
     token_FK = models.ForeignKey(Token, related_name='accountToken_token_FK', on_delete=models.CASCADE)
     balance = models.DecimalField(max_digits=15, decimal_places=2)
+
+    #codigo para unir a mesma conta com varias criptomoedas
+    class Meta:
+        unique_together = ('account_FK', 'token_FK')
     
     def __str__(self):
         return f'{self.account_FK.user_FK.email}-{self.token_FK.code}'
