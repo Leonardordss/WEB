@@ -1,3 +1,5 @@
+#Esse arquivo serializer é a construção das API´s. De json para Python e vice versa
+
 from rest_framework import serializers
 from .models import *
 
