@@ -1,12 +1,15 @@
 #responsavel por fazer o CRUD nas classes
+#A API é construída com essa duas linhas queryset e serializer
 
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
 from .serializers import *
 from .models import *
-from random import randint
+from random import randint #essa biblioteca é para numeros inteiros
 from rest_framework.response import Response
 from datetime import date
+
+#São construídas API´s para todas as tabelas para CRUD dos dados
 
 class CustomUserView(ModelViewSet):
     queryset = CustomUser.objects.all()
@@ -32,6 +35,8 @@ class BetView(ModelViewSet):
     queryset = Bet.objects.all()
     serializer_class = BetSerializer
 
+#Aqui começa a fazer a lógica para utilização do jogo de roleta
+
 #1 - apenas usuários autenticados podem fazer jogadas
 #2 - apenas usuários 18 + podem fazer jogadas
 #3 - apenas usuários com saldo positivo em MANGECOIN podem jogar
@@ -42,15 +47,15 @@ class BetTryView(APIView):
 
         #logica para o usuario autenticado poder jogar
         #Foi feito a autenticacao do usuario usando o Djoser
-        if not request.user.is_authenticated:
+        if not request.user.is_authenticated: #busca se o usuario esta authenticado
             return Response(status=403,data='Usuário não está autenticado!')
         
         #logica para maiores de 18 anos poder jogar
-        birth = request.user.birth_date
-        today = date.today()
-        age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day))
+        birth = request.user.birth_date #buscando a data de nascimento
+        today = date.today() #criada uma variavel
+        age = today.year - birth.year - ((today.month, today.day) < (birth.month, birth.day)) #Se o dia de hoje (today) for menor que o aniversario vai dizer que o usuario ainda não tem 18 anos
 
-        print("DATA DE NASCIMENTO DO USUÁRIO: ", birth)
+        print("DATA DE NASCIMENTO DO USUÁRIO: ", birth) #esses prints são para teste no terminal para enxergar a data cadastrada
         print("IDADE DO USUÁRIO: ", age)
 
         if age < 18:
