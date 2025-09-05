@@ -3,6 +3,9 @@ from django.contrib.auth.admin import UserAdmin
 
 from .models import *
 
+#Nessa página admin.py são inseridas as classes criadas no arquivo models.py. Essas classes se toranam as tabelas do banco de dados.
+
+#Este adminCustomUser é a página que vai mostrar os dados do usuario. Os campos de como devem aparecer
 class adminCustomUser(UserAdmin):
     model = CustomUser
     list_display = ['id', 'name', 'email'] #é o que vai aparecer na listagem
@@ -34,6 +37,7 @@ class adminCustomUser(UserAdmin):
     #este organiza a lista de usuarios pelo email
     ordering = ['email']
 
+#Essas são as classes criadas, ou seja, as tabelas feitas no models.py e aqui são chamadas para subir para o banco de dados.
 admin.site.register(CustomUser, adminCustomUser)
 admin.site.register(Token)
 admin.site.register(Account)
