@@ -8,6 +8,11 @@ from .models import *
 from random import randint #essa biblioteca é para numeros inteiros
 from rest_framework.response import Response
 from datetime import date
+from .utils import isPremium
+
+GAIN_POINTS = 5
+GAIN_POINTS_PREMIUM = 8
+LOSS_POINTS = 1
 
 #São construídas API´s para todas as tabelas para CRUD dos dados
 
@@ -63,21 +68,50 @@ class BetTryView(APIView):
                             data='Jogadas permitidas apenas p/ maiores de 18 anos.')
 
         #logica para buscar o saldo do usuario na tabela Account e autorizar a jogada
-
+        mangecoins = None
         try:
-            account = Account.objects.get(user_FK=request.user)
-            mangecoins = AccountToken.objects.get(account_FK=account,token_FK_id=1)            
-        except Exception:
+            # select *from Account where user_FK = x and closing_date is null;
+            account = Account.objects.get(user_FK=request.user,closing_date__isnull=True)
+            mangecoins = AccountToken.objects.get(account_FK=account,token_FK_id=1)
+            if (mangecoins.balance < LOSS_POINTS):
+                return Response(status=403,
+                            data=f'Você não tem saldo suficiente em Mangecoin para fazer uma jogada. SALDO: {mangecoins.balance}')    
+        except (AccountToken.DoesNotExist, Account.DoesNotExist):
             return Response(status=403,
-                            data='Você não tem saldo suficiente em Mangecoin para fazer uma jogada.')
-
+                            data='Você não tem registros de Mangecoin. Compre o token para poder jogar.')
+        
         #3 roletas de 5 imagens (0,1,2,3,4)
-        value1 = randint(0,4)
+        value1 = randint(0,4) # randint numero randomico inteiro de 0 a 4
         value2 = randint(0,4)
         value3 = randint(0,4)
+
+        #saldo antigo : 3
+        old_balance = mangecoins.balance
+        #verificar se o usuário ganhou ou perdeu
+        if (value1 == value2 and value2 == value3):
+            mangecoins.balance = mangecoins.balance + (
+                GAIN_POINTS_PREMIUM if isPremium(request.user.id) 
+                else GAIN_POINTS)
+        else:
+            mangecoins.balance = mangecoins.balance - LOSS_POINTS
+
+        mangecoins.save()
+
+        new_bet = Bet(
+            account_FK=mangecoins.account_FK,
+            is_loss=bool(old_balance > mangecoins.balance),
+            input_amount=old_balance,
+            output_amount=mangecoins.balance,
+            value1=value1,
+            value2=value2,
+            value3=value3,
+        )
+        # insert into Bet values (....);
+        new_bet.save()
 
         return Response(status=200,data={
             'bet1': value1,
             'bet2': value2,
-            'bet3': value3
+            'bet3': value3,
+            'new_balance': mangecoins.balance,
         })
