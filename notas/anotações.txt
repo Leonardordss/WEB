@@ -75,3 +75,12 @@ Na pagina Models nos campos que 'user' trocamos por CustomUser para usar o model
 
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from .user_manager import CustomUserManager
+
+///////////////////////////////////////////
+
+Aula dia 09/10 - Começando o FrontEnd
+
+Começamos instalando o NUXT para frontend. Framework mais robusto que o VUE. Usamos a documentação do NUXT que mostra o passo a passo para instalar.
+
+Necessário montar os Models no Nuxt de acordo com as classes do models do backend. Requisitos.
+
