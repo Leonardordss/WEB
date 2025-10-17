@@ -4,6 +4,7 @@ import type { Ativo } from "./ativo.model";
 import { User } from "./user.model";
 
 export class Tarefas {
+    id: number = 0;
     name: string = "";
     description: string = "";
     status: STATUS = STATUS.OPEN;

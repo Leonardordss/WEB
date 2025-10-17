@@ -30,6 +30,7 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Ambiente)
+admin.site.register(Category)
 admin.site.register(Ativo)
 admin.site.register(Tarefas)
 admin.site.register(HistoricoStatus)
