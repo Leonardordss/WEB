@@ -20,6 +20,7 @@ URGENCY_LEVELS = [
     ('HIGH', 'Alta'),
 ]
 
+
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     name = models.CharField(max_length=255, unique=True)
     email = models.EmailField(max_length=255, unique=True)
@@ -46,6 +47,13 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class Ambiente(models.Model):
     name = models.CharField(max_length=255)
+    responsible = models.ForeignKey(
+        CustomUser,
+        on_delete=models.SET_NULL,  
+        null=True,
+        blank=True,
+        related_name='ambientes_responsaveis'  
+    )
 
     def __str__(self):
         return self.name
